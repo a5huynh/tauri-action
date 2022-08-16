@@ -401,15 +401,33 @@ export async function buildProject(
           )
 
           if (platform() === 'darwin') {
-            return [
-              join(
-                artifactsPath,
-                `bundle/dmg/${fileAppName}_${app.version}_${process.arch}.dmg`
-              ),
-              join(artifactsPath, `bundle/macos/${fileAppName}.app`),
-              join(artifactsPath, `bundle/macos/${fileAppName}.app.tar.gz`),
-              join(artifactsPath, `bundle/macos/${fileAppName}.app.tar.gz.sig`),
-            ]
+            // Check to see if the universal-apple-darwin target was set.
+            let targetIndex = tauriArgs.findIndex((value) => value === '--target');
+            let target: string = targetIndex != -1 ? tauriArgs[targetIndex + 1] : "";
+            console.log(`CUSTOM TARGET: ${target}`);
+
+            if (target === "universal-apple-darwin") {
+              console.log('Handling universal build');
+              return [
+                join(
+                  artifactsPath,
+                  `../universal-apple-darwin/release/bundle/dmg/${fileAppName}_${app.version}_universal.dmg`
+                ),
+                join(artifactsPath, `../universal-apple-darwin/release/bundle/macos/${fileAppName}.app`),
+                join(artifactsPath, `../universal-apple-darwin/release/bundle/macos/${fileAppName}.app.tar.gz`),
+                join(artifactsPath, `../universal-apple-darwin/release/bundle/macos/${fileAppName}.app.tar.gz.sig`),
+              ]
+            } else {
+              return [
+                join(
+                  artifactsPath,
+                  `bundle/dmg/${fileAppName}_${app.version}_${process.arch}.dmg`
+                ),
+                join(artifactsPath, `bundle/macos/${fileAppName}.app`),
+                join(artifactsPath, `bundle/macos/${fileAppName}.app.tar.gz`),
+                join(artifactsPath, `bundle/macos/${fileAppName}.app.tar.gz.sig`),
+              ]
+            }
           } else if (platform() === 'win32') {
             // If multiple Wix languages are specified, multiple installers (.msi) will be made
             // The .zip and .sig are only generated for the first specified language
