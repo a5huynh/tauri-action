@@ -394,32 +394,31 @@ export async function buildProject(
           }
 
           const cratePath = getWorkspaceDir(app.tauriPath) ?? app.tauriPath;
+          // Check to see if the universal-apple-darwin target was set.
+          let targetIndex = tauriArgs.findIndex((value) => value === '--target');
+          let target: string = targetIndex != -1 ? tauriArgs[targetIndex + 1] : "";
 
           const artifactsPath = join(
             getTargetDir(cratePath),
+            target,
             debug ? 'debug' : 'release'
           );
           console.log(`artifactsPath: ${artifactsPath}`);
 
           if (platform() === 'darwin') {
-            // Check to see if the universal-apple-darwin target was set.
-            let targetIndex = tauriArgs.findIndex((value) => value === '--target');
-            let target: string = targetIndex != -1 ? tauriArgs[targetIndex + 1] : "";
             console.log(`CUSTOM TARGET: ${target}`);
 
             if (target === "universal-apple-darwin") {
-              console.log('Handling universal build');
               return [
                 join(
                   artifactsPath,
-                  `../universal-apple-darwin/release/bundle/dmg/${fileAppName}_${app.version}_universal.dmg`
+                  `bundle/dmg/${fileAppName}_${app.version}_universal.dmg`
                 ),
-                join(artifactsPath, `../universal-apple-darwin/release/bundle/macos/${fileAppName}.app`),
-                join(artifactsPath, `../universal-apple-darwin/release/bundle/macos/${fileAppName}.app.tar.gz`),
-                join(artifactsPath, `../universal-apple-darwin/release/bundle/macos/${fileAppName}.app.tar.gz.sig`),
+                join(artifactsPath, `bundle/macos/${fileAppName}.app`),
+                join(artifactsPath, `bundle/macos/${fileAppName}.app.tar.gz`),
+                join(artifactsPath, `bundle/macos/${fileAppName}.app.tar.gz.sig`),
               ];
             } else {
-              console.log("NORMAL BUILD");
               return [
                 join(
                   artifactsPath,
